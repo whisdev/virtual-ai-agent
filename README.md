@@ -4,7 +4,7 @@ A multi-agent AI system for the German-speaking market (DACH), designed as a vir
 
 ## Demo
 
-<video src="bandicam.mp4" controls width="640"></video>
+<video src="https://github.com/user-attachments/assets/353bfccb-fb25-4096-959b-0e6cb31136b9" controls width="640"></video>
 
 ---
 
