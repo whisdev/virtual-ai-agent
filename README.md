@@ -2,6 +2,10 @@
 
 A multi-agent AI system for the German-speaking market (DACH), designed as a virtual agency where specialized agents handle marketing, SEO, content creation, and lead management, coordinated by a central orchestrator.
 
+## Demo
+
+<video src="bandicam.mp4" controls width="640"></video>
+
 ---
 
 ## Purpose
@@ -100,7 +104,7 @@ Agents receive **context** from the orchestrator (user preferences, prior respon
 ## Quick Start (Python)
 
 ```bash
-cd virtuelle-agentur
+cd virtuelle-ai-agentur
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
