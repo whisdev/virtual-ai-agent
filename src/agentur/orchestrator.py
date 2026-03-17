@@ -1,6 +1,9 @@
 """Central orchestrator agent — routes requests and coordinates workflow."""
 
+import json
+
 from .agents import get_agents
+from .llm import get_llm_client
 from .types import AgentType, OrchestratorDecision, UserRequest
 
 
@@ -13,14 +16,43 @@ class Orchestrator:
     - Manages workflow state
     """
 
-    def __init__(self) -> None:
-        self._agents = get_agents()
+    def __init__(self, llm=None) -> None:
+        self._llm = llm or get_llm_client()
+        self._agents = get_agents(llm=self._llm)
 
     def route(self, request: UserRequest) -> OrchestratorDecision:
-        """
-        Analyze the request and decide which agent(s) should handle it.
-        In production, this would use an LLM for intelligent routing.
-        """
+        """Analyze the request and decide which agent(s) should handle it."""
+        if self._llm:
+            try:
+                from .prompts import ORCHESTRATOR_ROUTING_PROMPT
+
+                raw = self._llm.complete(
+                    ORCHESTRATOR_ROUTING_PROMPT,
+                    request.message,
+                )
+                # Extract JSON from response
+                start, end = raw.find("{"), raw.rfind("}") + 1
+                if start >= 0 and end > start:
+                    data = json.loads(raw[start:end])
+                    agent_names = data.get("agents", [])
+                    reasoning = data.get("reasoning", "")
+                    target_agents = [
+                        AgentType(a) for a in agent_names if a in [e.value for e in AgentType]
+                    ]
+                    if target_agents:
+                        return OrchestratorDecision(
+                            target_agents=target_agents,
+                            reasoning=reasoning or f"LLM routed to {agent_names}",
+                            workflow_steps=[f"Delegate to {a.value}" for a in target_agents],
+                        )
+            except (json.JSONDecodeError, ValueError, KeyError):
+                pass
+
+        # Fallback: keyword-based routing
+        return self._route_by_keywords(request)
+
+    def _route_by_keywords(self, request: UserRequest) -> OrchestratorDecision:
+        """Keyword-based routing when LLM is unavailable."""
         message_lower = request.message.lower()
         target_agents: list[AgentType] = []
         keywords: dict[AgentType, list[str]] = {
@@ -47,11 +79,11 @@ class Orchestrator:
                 target_agents.append(agent_type)
 
         if not target_agents:
-            target_agents = [AgentType.CONTENT]  # Default fallback
+            target_agents = [AgentType.CONTENT]
 
         return OrchestratorDecision(
             target_agents=target_agents,
-            reasoning=f"Routed to {[a.value for a in target_agents]} based on request content",
+            reasoning=f"Keyword-routing zu {[a.value for a in target_agents]}",
             workflow_steps=[f"Delegate to {a.value}" for a in target_agents],
         )
 

@@ -1,6 +1,7 @@
 """Marketing agent — campaigns, messaging, audience targeting."""
 
 from ..base_agent import BaseAgent
+from ..prompts import AGENT_PROMPTS
 from ..types import AgentResponse, AgentType, UserRequest
 
 
@@ -8,14 +9,15 @@ class MarketingAgent(BaseAgent):
     """Handles: ad copy, A/B ideas, channel strategy, campaign planning."""
 
     agent_type = AgentType.MARKETING
+    _prompt_key = "marketing"
 
     def handle(self, request: UserRequest, context: dict) -> AgentResponse:
-        # Placeholder: in production, would call LLM with marketing-specific prompt
+        lang = context.get("lang", "de")
+        content = self._generate(AGENT_PROMPTS["marketing"], request.message)
         return AgentResponse(
             agent_type=self.agent_type,
-            content=f"[Marketing Agent] Verarbeitung der Anfrage: {request.message[:100]}...\n\n"
-            "Empfehlung: Kampagnen-Strategie und Zielgruppenanalyse durchführen.",
-            metadata={"status": "pending_llm"},
+            content=content,
+            metadata={"lang": lang},
         )
 
     def get_capabilities(self) -> list[str]:

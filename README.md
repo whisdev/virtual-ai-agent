@@ -101,12 +101,18 @@ Agents receive **context** from the orchestrator (user preferences, prior respon
 
 ```bash
 cd virtuelle-agentur
-python3 -m venv .venv && source .venv/bin/activate   # optional
-pip install -r requirements.txt                       # optional (python-dotenv for .env)
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env: set OPENAI_API_KEY or LLM_PROVIDER=ollama for local models
 PYTHONPATH=src python3 run.py
 ```
 
-Or with editable install: `pip install -e .` then `python3 run.py`
+**Modes:**
+- `python3 run.py` — Demo request (blog + SEO)
+- `python3 run.py --interactive` — Type your own requests
+
+**LLM setup:** Uses [LiteLLM](https://docs.litellm.ai/) as model gateway. Set `LITELLM_MODEL` (e.g. `openai/gpt-4o`, `anthropic/claude-3-5-sonnet`, `ollama/llama3.2`) and the corresponding API key. Without config, agents return fallback messages.
 
 ---
 
